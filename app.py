@@ -1,7 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for
-import json
-import os
-from bs4 import BeautifulSoup
+from flask import Flask, render_template
 
 app = Flask(__name__)
 
