@@ -1,1 +1,108 @@
-html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thoughts - Personal Blog</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Poppins:wght@300;400&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <div class="upload-button-container">
+        <a href="{{ url_for('upload') }}" class="upload-button">+</a>
+    </div>
+
+    <div class="container">
+        <header class="blog-header">
+            <h1 class="blog-title">Thoughts</h1>
+            <p class="blog-subtitle">Para os pensamentos que cruzam o ar e ficam em folhas de papel</p>
+        </header>
+
+        <!-- Barra de búsqueda y filtro por tópico -->
+        <div class="filters">
+            <input type="text" id="search-bar" class="search-bar" placeholder="Pesquisar por nome...">
+            <select id="topic-filter" class="topic-filter">
+                <!-- Los tópicos se cargarán dinámicamente aquí -->
+            </select>
+        </div>
+
+        <div id="blog-list" class="blog-list"></div>
+
+    </div>
+
+    <script>
+        async function loadBlogList() {
+            try {
+                const response = await fetch('{{ url_for('static', filename="data.json") }}');
+                const data = await response.json();
+
+                const blogList = document.getElementById('blog-list');
+                const searchBar = document.getElementById('search-bar');
+                const topicFilter = document.getElementById('topic-filter');
+
+                // Cargar tópicos únicos en el filtro
+                const topics = [...new Set(data.blogs.map(blog => blog.topic))];
+                topicFilter.innerHTML = '<option value="all">Todos os tópicos</option>';
+                topics.forEach(topic => {
+                    const option = document.createElement('option');
+                    option.value = topic;
+                    option.textContent = topic.charAt(0).toUpperCase() + topic.slice(1);
+                    topicFilter.appendChild(option);
+                });
+
+                // Función para renderizar la lista de blogs
+                function renderBlogs(blogs) {
+                    blogList.innerHTML = '';
+                    blogs.forEach(blog => {
+                        const blogItem = document.createElement('div');
+                        blogItem.className = 'blog-item';
+
+                        const blogLink = document.createElement('a');
+                        blogLink.href = `/article/${blog.id}`;
+
+                        const blogTitle = document.createElement('h2');
+                        blogTitle.textContent = blog.title;
+
+                        const blogExcerpt = document.createElement('p');
+                        blogExcerpt.textContent = blog.footer + '...';
+
+                        blogLink.appendChild(blogTitle);
+                        blogLink.appendChild(blogExcerpt);
+                        blogItem.appendChild(blogLink);
+                        blogList.appendChild(blogItem);
+                    });
+                }
+
+                // Función para filtrar blogs
+                function filterBlogs() {
+                    const searchTerm = searchBar.value.toLowerCase();
+                    const selectedTopic = topicFilter.value;
+
+                    const filteredBlogs = data.blogs.filter(blog => {
+                        const matchesName = blog.title.toLowerCase().includes(searchTerm);
+                        const matchesTopic = selectedTopic === 'all' || blog.topic === selectedTopic;
+                        return matchesName && matchesTopic;
+                    });
+
+                    renderBlogs(filteredBlogs);
+                }
+
+                // Event listeners para búsqueda y filtro
+                searchBar.addEventListener('input', filterBlogs);
+                topicFilter.addEventListener('change', filterBlogs);
+
+                // Renderizar la lista completa inicialmente
+                renderBlogs(data.blogs);
+            } catch (error) {
+                console.error('Error loading blog list:', error);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadBlogList);
+    </script>
+</body>
+
+</html>
