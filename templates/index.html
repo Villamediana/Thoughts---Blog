@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ blog.title }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Poppins:wght@300;400&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <!-- Loader -->
+    <div class="loader"></div>
+
+    <!-- Barra de Progresso -->
+    <div class="progress-container">
+        <div class="progress-bar"></div>
+    </div>
+
+    <div class="upload-button-container">
+        <a href="/upload?blog_id={{ blog.id }}" class="upload-button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit">
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L10 17l-4 1 1-4 11.5-11.5z"></path>
+            </svg>
+        </a>
+    </div>
+    
+    
+    <div class="container">
+        <!-- Enlace para regresar al menú inicial -->
+        <div class="back-to-home">
+            <a href="/" class="back-link">&larr; Voltar ao Menu</a>
+        </div>
+
+        <!-- Encabezado del Blog -->
+        <header class="blog-header">
+            <h1 id="blog-title" class="blog-title">{{ blog.title }}</h1>
+            <p id="blog-subtitle" class="blog-subtitle">{{ blog.subtitle }}</p>
+        </header>
+
+        <!-- Artículo -->
+        <article class="blog-post">
+            <p id="post-meta" class="post-meta">{{ blog.date }} - {{ blog.author }}</p>
+
+            <div id="post-content" class="post-content"></div>
+
+            <footer id="post-footer" class="post-footer">{{ blog.footer }}</footer>
+        </article>
+
+        <!-- Contenido Relacionado -->
+        <div class="related-posts">
+            <h3>Posts Relacionados</h3>
+            <div id="related-posts-list" class="related-posts-grid"></div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        window.addEventListener('load', function () {
+            document.querySelector('.loader').style.display = 'none';
+        });
+
+        // Função para renderizar o conteúdo com formatação
+        function renderFormattedContent(contentArray) {
+            const contentDiv = document.getElementById('post-content');
+            
+            contentArray.forEach(item => {
+                if (typeof item === 'string') {
+                    // Texto simples com tags já formatadas
+                    const p = document.createElement('p');
+                    p.innerHTML = item; // Interpretando formatação como negrito e itálico
+                    contentDiv.appendChild(p);
+                } else if (item.type === 'quote') {
+                    // Renderizar uma citação com indentação
+                    const blockquote = document.createElement('blockquote');
+                    blockquote.textContent = item.content;
+                    contentDiv.appendChild(blockquote);
+                } else if (item.type === 'list') {
+                    // Renderizar uma lista com bullet points
+                    const ul = document.createElement('ul');
+                    item.items.forEach(listItem => {
+                        const li = document.createElement('li');
+                        li.textContent = listItem;
+                        ul.appendChild(li);
+                    });
+                    contentDiv.appendChild(ul);
+                }
+            });
+        }
+
+        // Carregar conteúdo formatado
+        document.addEventListener('DOMContentLoaded', () => {
+            const blogContent = {{ blog.content|tojson }};
+            renderFormattedContent(blogContent);
+        });
+
+        // Atualizar a barra de progresso enquanto se faz scroll
+        window.onscroll = function () { updateProgressBar(); };
+
+        function updateProgressBar() {
+            const progressBar = document.querySelector('.progress-bar');
+            const totalScroll = document.documentElement.scrollTop + document.body.scrollTop;
+            const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrolled = (totalScroll / height) * 100;
+            progressBar.style.width = scrolled + '%';
+        }
+
+        // Mostrar posts relacionados
+        function loadRelatedPosts() {
+            const relatedPostsList = document.getElementById('related-posts-list');
+            const blogTopic = "{{ blog.topic }}";
+            const currentBlogId = {{ blog.id }};
+
+            fetch('{{ url_for('static', filename="data.json") }}')
+                .then(response => response.json())
+                .then(data => {
+                    let relatedPosts = data.blogs.filter(post => post.topic === blogTopic && post.id !== currentBlogId);
+                    if (relatedPosts.length === 0) {
+                        const availablePosts = data.blogs.filter(post => post.id !== currentBlogId);
+                        for (let i = 0; i < 2 && availablePosts.length > 0; i++) {
+                            const randomIndex = Math.floor(Math.random() * availablePosts.length);
+                            relatedPosts.push(availablePosts.splice(randomIndex, 1)[0]);
+                        }
+                    } else {
+                        relatedPosts = relatedPosts.slice(0, 2);
+                    }
+                    relatedPosts.forEach(post => {
+                        const postItem = document.createElement('div');
+                        postItem.className = 'related-post-item';
+                        const link = document.createElement('a');
+                        link.href = `/article/${post.id}`;
+                        link.textContent = post.title;
+                        postItem.appendChild(link);
+                        relatedPostsList.appendChild(postItem);
+                    });
+                })
+                .catch(error => console.error('Erro ao carregar posts relacionados:', error));
+        }
+
+        document.addEventListener('DOMContentLoaded', loadRelatedPosts);
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ 'Editar thought' if blog else 'Novo thought' }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container upload-container">
+        <div class="back-to-home">
+            <a href="/" class="back-link">&larr; Voltar ao Menu</a>
+        </div>
+        <h1 class="upload-title">{{ 'Editar thought' if blog else 'Novo thought' }}</h1>
+        <form id="blog-form" method="POST" action="{{ url_for('upload', blog_id=blog.id if blog else None) }}">
+            <!-- Agrupación de Título y Autor en una fila -->
+            <div class="form-row">
+                <div class="form-group half-width">
+                    <label for="title">Título:</label>
+                    <input type="text" id="title" name="title" value="{{ blog.title if blog else '' }}" required>
+                </div>
+                <div class="form-group half-width">
+                    <label for="author">Autor:</label>
+                    <input type="text" id="author" name="author" value="{{ blog.author if blog else 'Miguel Villamediana' }}" required>
+                </div>
+            </div>
+            <!-- Agrupación de Data y Tópico en otra fila -->
+            <div class="form-row">
+                <div class="form-group half-width">
+                    <label for="date">Data:</label>
+                    <input type="date" id="date" name="date" value="{{ blog.date if blog else '' }}" required>
+                </div>
+                <div class="form-group half-width">
+                    <label for="topic">Tópico:</label>
+                    <input type="text" id="topic" name="topic" value="{{ blog.topic if blog else '' }}" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="content">Conteúdo:</label>
+                <div id="editor-container"></div>
+            </div>
+            <div class="form-group">
+                <label for="footer">Pitch:</label>
+                <textarea id="footer" name="footer" rows="3" placeholder="Uma frase curta impactante como subtitulo do pensamento.">{{ blog.footer if blog else '' }}</textarea>
+            </div>
+            <!-- Campo oculto para enviar o conteúdo do editor -->
+            <input type="hidden" id="content" name="content">
+            <button type="submit" class="submit-button">{{ 'Atualizar thought' if blog else 'Guardar thought' }}</button>
+        </form>
+    </div>
+
+    <!-- Quill JS -->
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+    <script>
+        // Inicializar Quill
+        var quill = new Quill('#editor-container', {
+            theme: 'snow',
+            placeholder: 'Escreva aqui...',
+            modules: {
+                toolbar: [
+                    [{ header: [1, 2, false] }],
+                    ['bold', 'italic', 'underline'],
+                    [{ list: 'ordered' }, { list: 'bullet' }],
+                    ['blockquote', 'code-block'],
+                    ['link'],
+                    [{ 'align': [] }],
+                ]
+            }
+        });
+
+        // Convertir contenido JSON a HTML
+        function convertContentToHTML(content) {
+            let html = '';
+
+            content.forEach(block => {
+                if (typeof block === 'string') {
+                    block = block.replace(/<strong>(.*?)<\/strong>/g, '<strong>$1</strong>');
+                    block = block.replace(/<em>(.*?)<\/em>/g, '<em>$1</em>');
+                    html += `<p>${block}</p>`;
+                } else if (block.type === 'quote') {
+                    html += `<blockquote>${block.content}</blockquote>`;
+                } else if (block.type === 'list') {
+                    let listItems = block.items.map(item => `<li>${item}</li>`).join('');
+                    html += `<ul>${listItems}</ul>`;
+                }
+            });
+
+            return html;
+        }
+
+        // Establecer el contenido inicial en el editor Quill si estamos editando
+        const blogContent = {{ blog['content'] | tojson | safe if blog else '[]' }};
+    quill.root.innerHTML = blogContent.length ? convertContentToHTML(blogContent) : '';
+
+        document.getElementById('blog-form').addEventListener('submit', function (event) {
+            // Antes de enviar, capturamos el contenido del editor
+            const contentHtml = quill.root.innerHTML;
+            document.getElementById('content').value = contentHtml;
+        });
+    </script>
+</body>
+
+</html>
