@@ -15,6 +15,7 @@
             <a href="/" class="back-link">&larr; Voltar ao Menu</a>
         </div>
         <h1 class="upload-title">{{ 'Editar thought' if blog else 'Novo thought' }}</h1>
+
         <form id="blog-form" method="POST" action="{{ url_for('upload', blog_id=blog.id if blog else None) }}">
             <!-- Agrupación de Título y Autor en una fila -->
             <div class="form-row">
@@ -48,7 +49,14 @@
             </div>
             <!-- Campo oculto para enviar o conteúdo do editor -->
             <input type="hidden" id="content" name="content">
-            <button type="submit" class="submit-button">{{ 'Atualizar thought' if blog else 'Guardar thought' }}</button>
+            <div class="button-row">
+                <button type="submit" class="submit-button">{{ 'Atualizar' if blog else 'Guardar' }}</button>
+                {% if blog %}
+                <form id="delete-form" method="POST" action="/delete/{{ blog['id'] }}">
+                    <button type="submit" class="delete-button">Eliminar</button>
+                </form>
+                {% endif %}
+            </div>
         </form>
     </div>
 
@@ -93,7 +101,7 @@
 
         // Establecer el contenido inicial en el editor Quill si estamos editando
         const blogContent = {{ blog['content'] | tojson | safe if blog else '[]' }};
-    quill.root.innerHTML = blogContent.length ? convertContentToHTML(blogContent) : '';
+        quill.root.innerHTML = blogContent.length ? convertContentToHTML(blogContent) : '';
 
         document.getElementById('blog-form').addEventListener('submit', function (event) {
             // Antes de enviar, capturamos el contenido del editor

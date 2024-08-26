@@ -10,6 +10,13 @@ def home():
     blogs = load_blogs()
     return render_template('home.html', blogs=blogs)
 
+@app.route('/delete/<int:blog_id>', methods=['POST'])
+def delete(blog_id):
+    blogs = load_blogs()
+    updated_blogs = [blog for blog in blogs if blog['id'] != blog_id]
+    save_blogs(updated_blogs)
+    return redirect(url_for('home'))
+
 # Función para cargar los blogs desde el archivo JSON
 def load_blogs():
     if os.path.exists('static/data.json'):
