@@ -156,6 +156,7 @@ button:hover {
     display: flex;
     justify-content: space-between;
     margin-bottom: 30px;
+    flex-wrap: wrap;
 }
 
 .search-bar {
@@ -182,8 +183,18 @@ button:hover {
     transition: border 0.3s ease;
 }
 
-.topic-filter:focus {
-    border-color: #b3b3b3;
+/* Ajustes para dispositivos móviles */
+@media (max-width: 600px) {
+    .filters {
+        flex-direction: column;
+    }
+
+    .search-bar,
+    .topic-filter {
+        width: 100%;
+        margin: 0;
+        margin-bottom: 10px; /* Espacio entre los campos en mobile */
+    }
 }
 
 
