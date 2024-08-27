@@ -471,9 +471,30 @@ ul li {
     display: flex;
     gap: 10px;
     margin-top: 20px;
+    justify-content: space-between;
 }
 
-.submit-button, .delete-button {
+
+.delete-form {
+    display: flex;
+}
+
+.delete-button {
+    margin-left: auto;
+    display: inline-block;
+    padding: 12px 20px;
+    font-size: 1rem;
+    font-family: 'Poppins', sans-serif;
+    color: #ffffff;
+    background-color: #4a4a4a;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+
+.submit-button{
     display: inline-block;
     padding: 12px 20px;
     font-size: 1rem;
