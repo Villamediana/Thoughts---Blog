@@ -367,14 +367,17 @@ ul li {
     color: #4a4a4a;
 }
 
+
+.delete-form {
+    display: flex;
+}
 /* Estilo minimalista para el botón de upload en la esquina */
 .upload-button-container {
-    position: fixed;
-    top: 20px;
-    right: 20px;
+    display: flex;
 }
 
 .upload-button {
+    margin-left: auto;
     display: inline-block;
     padding: 10px 15px;
     font-size: 1.5rem;
