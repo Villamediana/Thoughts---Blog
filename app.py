@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, jsonify, redirect, url_for
 import json
 import os
 from bs4 import BeautifulSoup
@@ -112,17 +112,25 @@ def upload():
 def add_comment(blog_id):
     blogs = load_blogs()
     blog = next((blog for blog in blogs if blog['id'] == blog_id), None)
+
     if blog:
-        author = request.form['comment_author']
-        content = request.form['comment_content']
-        blog['comments'].append({
-            "author": author,
-            "content": content
-        })
-        save_blogs(blogs)
-        return redirect(url_for('article', blog_id=blog_id))
+        # Asegúrate de usar request.json para obtener los datos
+        data = request.json
+        author = data.get('comment_author')
+        content = data.get('comment_content')
+
+        if author and content:
+            blog['comments'].append({
+                "author": author,
+                "content": content
+            })
+            save_blogs(blogs)
+            return jsonify({"success": True})
+
+        return jsonify({"success": False, "message": "Missing author or content"}), 400
     else:
-        return "Blog not found", 404
+        return jsonify({"success": False, "message": "Blog not found"}), 404
+
 
 if __name__ == '__main__':
     app.run()

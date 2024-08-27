@@ -153,66 +153,66 @@
 
         // Carregar e exibir comentários
         function loadComments() {
-            const commentsList = document.getElementById('comments-list');
-            fetch('{{ url_for('static', filename="data.json") }}')
-                .then(response => response.json())
-                .then(data => {
-                    const blog = data.blogs.find(post => post.id === {{ blog.id }});
-                    if (blog && blog.comments) {
-                        blog.comments.forEach(comment => {
-                            const commentItem = document.createElement('div');
-                            commentItem.className = 'comment-item';
-                            commentItem.innerHTML = `
-                                <strong>${comment.name}</strong>
-                                <p>${comment.text}</p>
-                            `;
-                            commentsList.appendChild(commentItem);
-                        });
-                    }
-                })
-                .catch(error => console.error('Erro ao carregar comentários:', error));
-        }
+    const commentsList = document.getElementById('comments-list');
+    fetch('{{ url_for('static', filename="data.json") }}')
+        .then(response => response.json())
+        .then(data => {
+            const blog = data.blogs.find(post => post.id === {{ blog.id }});
+            if (blog && blog.comments) {
+                blog.comments.forEach(comment => {
+                    const commentItem = document.createElement('div');
+                    commentItem.className = 'comment-item';
+                    commentItem.innerHTML = `
+                        <strong>${comment.author}</strong>: ${comment.content}
+                    `;
+                    commentsList.appendChild(commentItem);
+                });
+            }
+        })
+        .catch(error => console.error('Erro ao carregar comentários:', error));
+}
+
 
         // Enviar novo comentário
-        document.getElementById('submit-comment').addEventListener('click', function () {
-            const name = document.getElementById('commenter-name').value.trim();
-            const text = document.getElementById('comment-text').value.trim();
+    document.getElementById('submit-comment').addEventListener('click', function () {
+    const name = document.getElementById('commenter-name').value.trim();
+    const text = document.getElementById('comment-text').value.trim();
 
-            if (name && text) {
-                const newComment = { name, text };
+    if (name && text) {
+        const newComment = { name, text };
 
-                fetch('/add_comment', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        blog_id: {{ blog.id }},
-                        comment: newComment
-                    }),
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        // Mostrar o novo comentário instantaneamente
-                        const commentItem = document.createElement('div');
-                        commentItem.className = 'comment-item';
-                        commentItem.innerHTML = `
-                            <strong>${name}</strong>
-                            <p>${text}</p>
-                        `;
-                        document.getElementById('comments-list').appendChild(commentItem);
+        fetch(`/article/{{ blog.id }}/comment`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                comment_author: name,
+                comment_content: text
+            }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const commentItem = document.createElement('div');
+                commentItem.className = 'comment-item';
+                commentItem.innerHTML = `
+                    <strong>${name}</strong>
+                    <p>${text}</p>
+                `;
+                document.getElementById('comments-list').appendChild(commentItem);
 
-                        // Limpar os campos do formulário
-                        document.getElementById('commenter-name').value = '';
-                        document.getElementById('comment-text').value = '';
-                    } else {
-                        console.error('Erro ao adicionar comentário:', data.message);
-                    }
-                })
-                .catch(error => console.error('Erro ao enviar comentário:', error));
+                document.getElementById('commenter-name').value = '';
+                document.getElementById('comment-text').value = '';
+            } else {
+                console.error('Erro ao adicionar comentário:', data.message);
             }
-        });
+        })
+        .catch(error => console.error('Erro ao enviar comentário:', error));
+    }
+});
+
+
     </script>
 </body>
 
