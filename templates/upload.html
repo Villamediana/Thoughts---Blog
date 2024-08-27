@@ -14,7 +14,7 @@
         <div class="back-to-home">
             <a href="/" class="back-link">&larr; Voltar ao Menu</a>
         </div>
-        <h1 class="upload-title">{{ 'Editar thought' if blog else 'Novo thought' }}</h1>
+        <h1 class="upload-title">{{ 'Editar pensamento' if blog else 'Novo pensamento' }}</h1>
 
         <form id="blog-form" method="POST" action="{{ url_for('upload', blog_id=blog.id if blog else None) }}">
             <!-- Agrupación de Título y Autor en una fila -->
