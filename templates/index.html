@@ -18,7 +18,6 @@
         <div class="progress-bar"></div>
     </div>
 
-    <!-- Botão de Upload -->
     <div class="upload-button-container">
         <a href="/upload?blog_id={{ blog.id }}" class="upload-button">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit">
@@ -27,7 +26,6 @@
         </a>
     </div>
     
-    <!-- Container Principal -->
     <div class="container">
         <!-- Enlace para regresar al menú inicial -->
         <div class="back-to-home">
@@ -43,16 +41,18 @@
         <!-- Artículo -->
         <article class="blog-post">
             <p id="post-meta" class="post-meta">{{ blog.date }} - {{ blog.author }}</p>
+
             <div id="post-content" class="post-content"></div>
+
             <footer id="post-footer" class="post-footer">{{ blog.footer }}</footer>
         </article>
 
-        <!-- Seção de Comentários -->
+        <!-- Sección de comentarios -->
         <div id="comments-section" class="comments-section">
             <h3>Comentários</h3>
             <div id="comments-list"></div>
 
-            <!-- Formulário para adicionar comentário -->
+            <!-- Formulario para agregar comentarios -->
             <div class="comment-form">
                 <h4>Deixe um comentário</h4>
                 <input type="text" id="commenter-name" placeholder="Seu nome" required>
@@ -61,7 +61,7 @@
             </div>
         </div>
 
-        <!-- Conteúdo Relacionado -->
+        <!-- Contenido Relacionado -->
         <div class="related-posts">
             <h3>Posts Relacionados</h3>
             <div id="related-posts-list" class="related-posts-grid"></div>
@@ -74,7 +74,7 @@
             document.querySelector('.loader').style.display = 'none';
         });
 
-        // Função para renderizar o conteúdo formatado
+        // Função para renderizar o conteúdo com formatação
         function renderFormattedContent(contentArray) {
             const contentDiv = document.getElementById('post-content');
             
@@ -179,17 +179,17 @@
             const text = document.getElementById('comment-text').value.trim();
 
             if (name && text) {
-                const newComment = {
-                    author: name,
-                    content: text
-                };
+                const newComment = { name, text };
 
-                fetch(`/article/${{{ blog.id }}}/comment`, {
+                fetch('/add_comment', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify(newComment)
+                    body: JSON.stringify({
+                        blog_id: {{ blog.id }},
+                        comment: newComment
+                    }),
                 })
                 .then(response => response.json())
                 .then(data => {
@@ -197,7 +197,10 @@
                         // Mostrar o novo comentário instantaneamente
                         const commentItem = document.createElement('div');
                         commentItem.className = 'comment-item';
-                        commentItem.innerHTML = '<strong>${name}</strong><p>${text}</p>';
+                        commentItem.innerHTML = `
+                            <strong>${name}</strong>
+                            <p>${text}</p>
+                        `;
                         document.getElementById('comments-list').appendChild(commentItem);
 
                         // Limpar os campos do formulário
