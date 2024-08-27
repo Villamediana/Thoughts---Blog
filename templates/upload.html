@@ -42,7 +42,8 @@
             <div class="form-group">
                 <label for="content">Conteúdo:</label>
                 <div id="editor-container"></div>
-            </div>
+                <button type="button" id="expand-editor-button" class="expand-button">&#x2194;</button>
+            </div>  
             <div class="form-group">
                 <label for="footer">Pitch:</label>
                 <textarea id="footer" name="footer" rows="3" placeholder="Uma frase curta impactante como subtitulo do pensamento.">{{ blog.footer if blog else '' }}</textarea>
@@ -52,7 +53,9 @@
             <div class="button-row">
                 <button type="submit" class="submit-button">{{ 'Atualizar' if blog else 'Guardar' }}</button>
                 {% if blog %}
-                <button type="button" class="delete-button" onclick="deleteBlog()">Eliminar</button>
+                <form id="delete-form" method="POST" action="/delete/{{ blog['id'] }}">
+                    <button type="submit" class="delete-button">Eliminar</button>
+                </form>
                 {% endif %}
             </div>
         </form>
@@ -61,6 +64,25 @@
     <!-- Quill JS -->
     <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
     <script>
+        document.addEventListener('DOMContentLoaded', function () {
+    const expandButton = document.getElementById('expand-editor-button');
+    const editorContainer = document.getElementById('editor-container');
+    const body = document.body;
+
+    expandButton.addEventListener('click', function () {
+        // Alternar el estado expandido
+        editorContainer.classList.toggle('expanded');
+        expandButton.classList.toggle('expanded');
+        body.classList.toggle('expanded-editor');
+
+        // Cambiar el texto del botón según el estado
+        if (editorContainer.classList.contains('expanded')) {
+            expandButton.innerHTML = '&minus;'; // Cambiar a un ícono "-"
+        } else {
+            expandButton.innerHTML = '&#x2194;';
+        }
+    });
+});
         // Inicializar Quill
         var quill = new Quill('#editor-container', {
             theme: 'snow',
@@ -107,23 +129,29 @@
             document.getElementById('content').value = contentHtml;
         });
 
-        // Función para eliminar un blog
-        function deleteBlog() {
-            if (confirm('¿Estás seguro de que deseas eliminar este pensamiento?')) {
-                fetch('/delete/{{ blog.id }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                }).then(response => {
-                    if (response.ok) {
-                        window.location.href = '/';
-                    } else {
-                        alert('Ocurrió un error al eliminar el pensamiento.');
-                    }
-                }).catch(error => console.error('Error:', error));
+        // Capturar atajos y comandos personalizados
+        document.addEventListener('keydown', function (event) {
+            const cursorPosition = quill.getSelection()?.index || 0;
+            const text = quill.getText(cursorPosition - 10, 10).trim();
+
+            const commandMapping = {
+                "squote": () => quill.format('blockquote', true),
+                "equote": () => quill.format('blockquote', false),
+                "sbold": () => quill.format('bold', true),
+                "ebold": () => quill.format('bold', false),
+                "sitalic": () => quill.format('italic', true),
+                "eitalic": () => quill.format('italic', false),
+                "sbullet": () => quill.format('list', 'bullet'),
+                "ebullet": () => quill.format('list', false)
+            };
+
+            const match = Object.keys(commandMapping).find(cmd => text.endsWith(cmd));
+            if (match) {
+                event.preventDefault();
+                quill.deleteText(cursorPosition - match.length, match.length);
+                commandMapping[match]();
             }
-        }
+        });
     </script>
 </body>
 
