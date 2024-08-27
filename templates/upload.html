@@ -52,9 +52,7 @@
             <div class="button-row">
                 <button type="submit" class="submit-button">{{ 'Atualizar' if blog else 'Guardar' }}</button>
                 {% if blog %}
-                <form id="delete-form" method="POST" action="/delete/{{ blog['id'] }}">
-                    <button type="submit" class="delete-button">Eliminar</button>
-                </form>
+                <button type="button" class="delete-button" onclick="deleteBlog()">Eliminar</button>
                 {% endif %}
             </div>
         </form>
@@ -108,6 +106,24 @@
             const contentHtml = quill.root.innerHTML;
             document.getElementById('content').value = contentHtml;
         });
+
+        // Función para eliminar un blog
+        function deleteBlog() {
+            if (confirm('¿Estás seguro de que deseas eliminar este pensamiento?')) {
+                fetch('/delete/{{ blog.id }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                }).then(response => {
+                    if (response.ok) {
+                        window.location.href = '/';
+                    } else {
+                        alert('Ocurrió un error al eliminar el pensamiento.');
+                    }
+                }).catch(error => console.error('Error:', error));
+            }
+        }
     </script>
 </body>
 

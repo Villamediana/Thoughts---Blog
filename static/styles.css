@@ -96,7 +96,12 @@ button:hover {
 }
 
 
+/* Ajustes responsivos generales */
 @media (max-width: 600px) {
+    .container {
+        padding: 10px;
+    }
+
     .blog-title {
         font-size: 2.5rem;
     }
@@ -107,6 +112,30 @@ button:hover {
 
     .post-content {
         font-size: 1.1rem;
+    }
+
+    .blog-header {
+        padding: 30px 0;
+    }
+
+    .post-footer {
+        padding-top: 10px;
+    }
+
+    .filters {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .search-bar,
+    .topic-filter {
+        margin: 0;
+        margin-bottom: 10px;
+    }
+
+    .upload-button-container {
+        top: 10px;
+        right: 10px;
     }
 }
 
@@ -147,9 +176,6 @@ button:hover {
     background-color: #f5f5f5;
     cursor: pointer;
 }
-
-
-/* Estilos existentes... */
 
 /* Estilos para la barra de búsqueda y el filtro */
 .filters {
@@ -195,7 +221,6 @@ button:hover {
         margin-bottom: 10px; /* Espacio entre los campos en mobile */
     }
 }
-
 
 /* Personalización del scrollbar */
 ::-webkit-scrollbar {
@@ -302,7 +327,6 @@ button:hover {
     color: #8a8a8a;
 }
 
-
 /* Estilo para el enlace de regreso */
 .back-to-home {
     margin-bottom: 20px;
@@ -321,8 +345,6 @@ button:hover {
     color: #8a8a8a;
     border-bottom: 1px solid #8a8a8a;
 }
-
-/* Estilo para negrito e itálico (já são geridos pelos navegadores de forma nativa) */
 
 /* Estilo para citações (quote) */
 blockquote {
@@ -375,13 +397,24 @@ ul li {
     width: 48%; /* Mantén un pequeño espacio entre las columnas */
 }
 
+/* Ajustes responsivos para formularios */
+@media (max-width: 600px) {
+    .form-row {
+        flex-direction: column;
+    }
+
+    .half-width {
+        width: 100%;
+        margin-bottom: 15px;
+    }
+}
+
 /* Estilo general (sin cambios) */
 .upload-container {
     max-width: 800px;
     margin: 0 auto;
     padding: 20px;
     background-color: #ffffff;
-    /*box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);*/
     border-radius: 8px;
 }
 
@@ -455,4 +488,66 @@ ul li {
 
 .submit-button:hover,.delete-button:hover {
     background-color: #333333;
+}
+
+/* Estilos para la sección de comentarios */
+.comments-section {
+    margin-top: 50px;
+}
+
+.comments-section h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    color: #2c2c2c;
+}
+
+.comment-form {
+    margin-bottom: 30px;
+}
+
+.comment-form input[type="text"],
+.comment-form textarea {
+    width: 100%;
+    padding: 10px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 1rem;
+    border: 1px solid #cccccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    margin-bottom: 15px;
+}
+
+.comment-form button {
+    display: inline-block;
+    padding: 10px 20px;
+    font-size: 1rem;
+    font-family: 'Poppins', sans-serif;
+    color: #ffffff;
+    background-color: #4a4a4a;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.comment-form button:hover {
+    background-color: #333333;
+}
+
+.comment {
+    margin-bottom: 30px;
+    border-bottom: 1px solid #e0e0e0;
+    padding-bottom: 20px;
+}
+
+.comment-author {
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: #2c2c2c;
+}
+
+.comment-content {
+    font-size: 1.1rem;
+    color: #4a4a4a;
 }

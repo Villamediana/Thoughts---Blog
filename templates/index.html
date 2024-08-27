@@ -18,6 +18,7 @@
         <div class="progress-bar"></div>
     </div>
 
+    <!-- Botão de Upload -->
     <div class="upload-button-container">
         <a href="/upload?blog_id={{ blog.id }}" class="upload-button">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit">
@@ -26,7 +27,7 @@
         </a>
     </div>
     
-    
+    <!-- Container Principal -->
     <div class="container">
         <!-- Enlace para regresar al menú inicial -->
         <div class="back-to-home">
@@ -42,13 +43,25 @@
         <!-- Artículo -->
         <article class="blog-post">
             <p id="post-meta" class="post-meta">{{ blog.date }} - {{ blog.author }}</p>
-
             <div id="post-content" class="post-content"></div>
-
             <footer id="post-footer" class="post-footer">{{ blog.footer }}</footer>
         </article>
 
-        <!-- Contenido Relacionado -->
+        <!-- Seção de Comentários -->
+        <div id="comments-section" class="comments-section">
+            <h3>Comentários</h3>
+            <div id="comments-list"></div>
+
+            <!-- Formulário para adicionar comentário -->
+            <div class="comment-form">
+                <h4>Deixe um comentário</h4>
+                <input type="text" id="commenter-name" placeholder="Seu nome" required>
+                <textarea id="comment-text" placeholder="Escreva seu comentário..." required></textarea>
+                <button id="submit-comment">Enviar</button>
+            </div>
+        </div>
+
+        <!-- Conteúdo Relacionado -->
         <div class="related-posts">
             <h3>Posts Relacionados</h3>
             <div id="related-posts-list" class="related-posts-grid"></div>
@@ -61,23 +74,20 @@
             document.querySelector('.loader').style.display = 'none';
         });
 
-        // Função para renderizar o conteúdo com formatação
+        // Função para renderizar o conteúdo formatado
         function renderFormattedContent(contentArray) {
             const contentDiv = document.getElementById('post-content');
             
             contentArray.forEach(item => {
                 if (typeof item === 'string') {
-                    // Texto simples com tags já formatadas
                     const p = document.createElement('p');
-                    p.innerHTML = item; // Interpretando formatação como negrito e itálico
+                    p.innerHTML = item; 
                     contentDiv.appendChild(p);
                 } else if (item.type === 'quote') {
-                    // Renderizar uma citação com indentação
                     const blockquote = document.createElement('blockquote');
                     blockquote.textContent = item.content;
                     contentDiv.appendChild(blockquote);
                 } else if (item.type === 'list') {
-                    // Renderizar uma lista com bullet points
                     const ul = document.createElement('ul');
                     item.items.forEach(listItem => {
                         const li = document.createElement('li');
@@ -93,6 +103,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             const blogContent = {{ blog.content|tojson }};
             renderFormattedContent(blogContent);
+            loadComments();
         });
 
         // Atualizar a barra de progresso enquanto se faz scroll
@@ -139,6 +150,66 @@
         }
 
         document.addEventListener('DOMContentLoaded', loadRelatedPosts);
+
+        // Carregar e exibir comentários
+        function loadComments() {
+            const commentsList = document.getElementById('comments-list');
+            fetch('{{ url_for('static', filename="data.json") }}')
+                .then(response => response.json())
+                .then(data => {
+                    const blog = data.blogs.find(post => post.id === {{ blog.id }});
+                    if (blog && blog.comments) {
+                        blog.comments.forEach(comment => {
+                            const commentItem = document.createElement('div');
+                            commentItem.className = 'comment-item';
+                            commentItem.innerHTML = `
+                                <strong>${comment.name}</strong>
+                                <p>${comment.text}</p>
+                            `;
+                            commentsList.appendChild(commentItem);
+                        });
+                    }
+                })
+                .catch(error => console.error('Erro ao carregar comentários:', error));
+        }
+
+        // Enviar novo comentário
+        document.getElementById('submit-comment').addEventListener('click', function () {
+            const name = document.getElementById('commenter-name').value.trim();
+            const text = document.getElementById('comment-text').value.trim();
+
+            if (name && text) {
+                const newComment = {
+                    author: name,
+                    content: text
+                };
+
+                fetch(`/article/${{{ blog.id }}}/comment`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(newComment)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Mostrar o novo comentário instantaneamente
+                        const commentItem = document.createElement('div');
+                        commentItem.className = 'comment-item';
+                        commentItem.innerHTML = '<strong>${name}</strong><p>${text}</p>';
+                        document.getElementById('comments-list').appendChild(commentItem);
+
+                        // Limpar os campos do formulário
+                        document.getElementById('commenter-name').value = '';
+                        document.getElementById('comment-text').value = '';
+                    } else {
+                        console.error('Erro ao adicionar comentário:', data.message);
+                    }
+                })
+                .catch(error => console.error('Erro ao enviar comentário:', error));
+            }
+        });
     </script>
 </body>
 

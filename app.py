@@ -97,7 +97,8 @@ def upload():
                 "author": author,
                 "topic": topic,
                 "content": content_json,
-                "footer": footer
+                "footer": footer,
+                "comments": []  # Inicializar la lista de comentarios
             }
             blogs.append(new_blog)
 
@@ -106,6 +107,22 @@ def upload():
         return redirect(url_for('home'))
 
     return render_template('upload.html', blog=blog_to_edit)
+
+@app.route('/article/<int:blog_id>/comment', methods=['POST'])
+def add_comment(blog_id):
+    blogs = load_blogs()
+    blog = next((blog for blog in blogs if blog['id'] == blog_id), None)
+    if blog:
+        author = request.form['comment_author']
+        content = request.form['comment_content']
+        blog['comments'].append({
+            "author": author,
+            "content": content
+        })
+        save_blogs(blogs)
+        return redirect(url_for('article', blog_id=blog_id))
+    else:
+        return "Blog not found", 404
 
 if __name__ == '__main__':
     app.run()
