@@ -110,22 +110,29 @@
                     ['blockquote', 'code-block'],
                     ['link'],
                     [{ 'align': [] }],
-                    ['myButton'],
+                    ['myButton']
                 ]
             }
         });
 
         var toolbar = quill.getModule('toolbar');
-var button = document.createElement('button');
-button.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check"><path d="M20 6L9 17l-5-5"/></svg>';
-button.addEventListener('click', function() {
-    var request = "Correct the grammar of the following text. Only show as response the corrected text: "+quill.getText()+""
-    var control = 1;
-    sendRequest(request,control)
-});
-toolbar.container.appendChild(button);
+        var button = document.createElement('button');
+        button.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check"><path d="M20 6L9 17l-5-5"/></svg>';
 
+        button.addEventListener('click', function() {
+        var request = "Correct the grammar of the following text in the language of the text. Only show as response the corrected text: "+quill.getText()+""
+        sendRequest(request,1)
+    });
+    
+    toolbar.container.appendChild(button);
 
+    function clearTags() {
+        const fullText = quill.getText();
+        const regex = /<[^>]+>/g; // Expresión regular para capturar todo el texto entre < y >
+        const cleanedText = fullText.replace(regex, ''); // Remover todo el texto dentro de <>
+
+        quill.setText(cleanedText); // Reemplazar el contenido del editor con el texto limpio
+    }
         // Convertir contenido JSON a HTML
         function convertContentToHTML(content) {
             let html = '';
@@ -159,7 +166,6 @@ toolbar.container.appendChild(button);
         document.addEventListener('keyup', function (event) {
     const cursorPosition = quill.getSelection()?.index || 0;
     const text = quill.getText(cursorPosition - 10, 10).trim().toLowerCase(); // Convertir a minúsculas
-
     const commandMapping = {
         "squote": () => quill.format('blockquote', true),
         "equote": () => quill.format('blockquote', false),
@@ -168,6 +174,8 @@ toolbar.container.appendChild(button);
         "sitalic": () => quill.format('italic', true),
         "eitalic": () => quill.format('italic', false),
         "sbullet": () => quill.format('list', 'bullet'),
+        "sclean": () => clearTags(),
+        "scorrect": () => sendRequest("Correct the grammar of the following text in the language of the text. Only show as response the corrected text: "+quill.getText()+"",1),
         "srequest": () => processRequests() // Comando para solicitud IA
     };
 
@@ -196,11 +204,11 @@ function processRequests() {
     concatenatedRequest = concatenatedRequest.trim();
 
     if (concatenatedRequest) {
-        sendRequest(concatenatedRequest);
+        sendRequest(concatenatedRequest,0);
     }
 }
 
-function sendRequest(requestText,control=0) {
+function sendRequest(requestText, control) {
     var flowUrl = "https://prod-108.westus.logic.azure.com:443/workflows/743d727a10144fb4ae00fdf0be8465ed/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=qthSEh9dBGZCeAhM2JaVQ6gF4YV_HuIqlUfObUJ5bp4";
     var inputdata = JSON.stringify({
         "request": requestText
@@ -215,11 +223,14 @@ function sendRequest(requestText,control=0) {
         if (this.readyState === 4) {
             req.onreadystatechange = null;
             if (this.status === 200) {
-                if (control=0){
-                    const cursorPosition = quill.getSelection()?.index || 0;
-                    quill.insertText(cursorPosition, this.response); // Insertar respuesta en la posición del cursor
-                } else{
-                    quill.root.innerHTML = this.response;
+                const cursorPosition = quill.getSelection()?.index || 0;
+                
+                if (control === 0) {
+                    // Concatenar la respuesta en la posición del cursor
+                    quill.insertText(cursorPosition, `<AI Response: ${this.response}>`);
+                } else if (control === 1) {
+                    // Reemplazar todo el contenido con la respuesta
+                    quill.setText(this.response);
                 }
             } else if (this.status === 400) {
                 alert(this.statusText);
@@ -233,6 +244,7 @@ function sendRequest(requestText,control=0) {
         alert("La solicitud ha tardado demasiado tiempo en responder. Por favor, inténtalo de nuevo.");
     };
 }
+
 
     </script>
 </body>
