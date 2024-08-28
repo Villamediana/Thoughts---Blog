@@ -112,6 +112,26 @@
       ],
       "footer": "Um novo eu, a cada nascer do sol",
       "comments": []
+    },
+    {
+      "id": 3,
+      "title": "É dificil?",
+      "date": "2024-08-28",
+      "author": "Miguel Villamediana",
+      "topic": "Recomeço",
+      "content": [
+        "É difícil ser uma versão melhor? Não faço ideia, mas porque é tão difícil comer bem, fazer exercícios e beber agua?",
+        "",
+        "Acho que se eu, acordasse cedo para meditar, dormisse cedo, bebesse água, fizesse exercícios e comesse bem, resolveria 80% dos meus problemas ",
+        "",
+        {
+          "type": "quote",
+          "content": "Eu consigo"
+        },
+        ""
+      ],
+      "footer": "É difícil?",
+      "comments": []
     }
   ]
 }
