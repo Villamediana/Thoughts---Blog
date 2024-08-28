@@ -110,9 +110,21 @@
                     ['blockquote', 'code-block'],
                     ['link'],
                     [{ 'align': [] }],
+                    ['myButton'],
                 ]
             }
         });
+
+        var toolbar = quill.getModule('toolbar');
+var button = document.createElement('button');
+button.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check"><path d="M20 6L9 17l-5-5"/></svg>';
+button.addEventListener('click', function() {
+    var request = "Correct the grammar of the following text. Only show as response the corrected text: "+quill.getText()+""
+    var control = 1;
+    sendRequest(request,control)
+});
+toolbar.container.appendChild(button);
+
 
         // Convertir contenido JSON a HTML
         function convertContentToHTML(content) {
@@ -188,7 +200,7 @@ function processRequests() {
     }
 }
 
-function sendRequest(requestText) {
+function sendRequest(requestText,control=0) {
     var flowUrl = "https://prod-108.westus.logic.azure.com:443/workflows/743d727a10144fb4ae00fdf0be8465ed/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=qthSEh9dBGZCeAhM2JaVQ6gF4YV_HuIqlUfObUJ5bp4";
     var inputdata = JSON.stringify({
         "request": requestText
@@ -203,8 +215,12 @@ function sendRequest(requestText) {
         if (this.readyState === 4) {
             req.onreadystatechange = null;
             if (this.status === 200) {
-                const cursorPosition = quill.getSelection()?.index || 0;
-                quill.insertText(cursorPosition, this.response); // Insertar respuesta en la posición del cursor
+                if (control=0){
+                    const cursorPosition = quill.getSelection()?.index || 0;
+                    quill.insertText(cursorPosition, this.response); // Insertar respuesta en la posición del cursor
+                } else{
+                    quill.root.innerHTML = this.response;
+                }
             } else if (this.status === 400) {
                 alert(this.statusText);
                 var result = this.response;
